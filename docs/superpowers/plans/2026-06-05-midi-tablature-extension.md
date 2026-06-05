@@ -806,6 +806,14 @@ describe("injectPayload", () => {
     expect(JSON.parse(json)).toEqual(payload);
   });
 
+  it("does not expand $-patterns from the payload (clip name with $& $' $`)", () => {
+    const tricky: TabPayload = { ...payload, clipName: "$& $` $' $$ Intro" };
+    const result = injectPayload(html, tricky);
+    expect(result).not.toContain(PAYLOAD_TOKEN);
+    const json = result.match(/type="application\/json">([\s\S]*?)<\/script>/)![1];
+    expect(JSON.parse(json).clipName).toBe("$& $` $' $$ Intro");
+  });
+
   it("throws when the token is missing", () => {
     expect(() => injectPayload("<html></html>", payload)).toThrow(/token/i);
   });
@@ -885,7 +893,10 @@ export function escapeForScriptJson(json: string): string {
 /** Replace the payload token in the bundled webview HTML with the escaped payload JSON. */
 export function injectPayload(html: string, payload: TabPayload): string {
   if (!html.includes(PAYLOAD_TOKEN)) throw new Error("payload token not found in webview HTML");
-  return html.replace(PAYLOAD_TOKEN, escapeForScriptJson(JSON.stringify(payload)));
+  // Pass the replacement as a function so String.replace uses it verbatim. With a
+  // string replacement, `$&`/`$'`/`` $` ``/`$$` in the JSON (e.g. a clip named
+  // "$& Intro") would be expanded as special patterns and corrupt the payload.
+  return html.replace(PAYLOAD_TOKEN, () => escapeForScriptJson(JSON.stringify(payload)));
 }
 ```
 
