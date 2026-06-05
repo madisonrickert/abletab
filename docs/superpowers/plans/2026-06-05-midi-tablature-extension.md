@@ -652,6 +652,11 @@ describe("INSTRUMENTS", () => {
     }
   });
 
+  it("bounds are 4 and 8", () => {
+    expect(MIN_STRINGS).toBe(4);
+    expect(MAX_STRINGS).toBe(8);
+  });
+
   it("every string name is a tutts-parseable note name (letter, optional #/b, octave)", () => {
     const re = /^[A-Ga-g][#b!]?[+-]?\d+$/;
     for (const p of INSTRUMENTS) for (const n of p.stringNames) expect(n).toMatch(re);
@@ -675,6 +680,9 @@ describe("chromaticNoteNames", () => {
   it("contains every preset string name (so each can be selected in a dropdown)", () => {
     const names = new Set(chromaticNoteNames(0, 6));
     for (const p of INSTRUMENTS) for (const n of p.stringNames) expect(names.has(n)).toBe(true);
+  });
+  it("defaults span octaves 0-6", () => {
+    expect(chromaticNoteNames()).toEqual(chromaticNoteNames(0, 6));
   });
 });
 ```
