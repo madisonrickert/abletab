@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # The Ableton SDK (private beta tarball) and the @tutts/* packages (local
+      # file: deps until published to npm) cannot be resolved in CI. Drop them and
+      # verify the SDK/tutts-independent core: the pure modules and their unit
+      # tests. Re-enable the UI type-check + build here once @tutts/* is on npm.
+      - name: Drop unresolvable deps for CI
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));for(const k of ['dependencies','devDependencies']){if(p[k]){for(const d of ['@ableton-extensions/sdk','@ableton-extensions/cli','@tutts/core','@tutts/alphatab']) delete p[k][d];}}fs.writeFileSync('package.json',JSON.stringify(p,null,2));"
+
+      - name: Install dependencies
+        run: npm install --no-package-lock
+
+      - name: Unit tests
+        run: npm test

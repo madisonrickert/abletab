@@ -1,0 +1,10 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    include: ["src/**/*.test.ts", "ui/src/**/*.test.ts"],
+    exclude: ["**/*.integration.test.ts", "**/node_modules/**"],
+    environment: "node",
+    passWithNoTests: true,
+  },
+});
