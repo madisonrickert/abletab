@@ -150,9 +150,16 @@ Pure setup — no music logic yet. Establishes a repo that installs and runs an 
     "lib": ["esnext", "dom", "dom.iterable"],
     "types": []
   },
-  "include": ["src/**/*", "../src/**/*"]
+  "include": ["src/**/*"]
 }
 ```
+
+> Note: `include` is only `ui/src` (relative to this file). The shared Node-side
+> modules that webview files import (`../../src/payload`, `../../src/instruments`,
+> `../../src/notation/types`) are pulled into the program transitively and
+> type-checked too — but `src/notes.ts` and `src/extension.ts` (which need Node
+> globals + the SDK) are NOT in `ui/src`'s import graph, so this tsconfig never
+> tries to check them under its dom-only / no-node-types lib.
 
 `vite.config.ts`:
 
