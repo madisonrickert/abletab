@@ -176,7 +176,7 @@ The webview parses the payload, builds the tuning, runs the `tutts` pipeline, an
 
 ### Exports
 
-- **PDF** — render the AlphaTab SVG into a jsPDF canvas via `svg2pdf.js`, add a footer with provenance (clip name, tempo, tuning), emit base64. Same mechanism as the sheet music PDF path.
+- **PDF** — rasterize each rendered AlphaTab SVG (with the Bravura `@font-face` embedded inline so the SMuFL glyphs survive off-DOM rasterization) onto a canvas, place the images into a jsPDF page with a provenance footer (clip name, tempo, tuning), emit base64. *(Implementation note: this is a raster PDF, not the `svg2pdf.js` vector path the brainstorm first sketched — embedding a SMuFL font into jsPDF for faithful vector output is out of scope for v1, and rasterizing the already-rendered SVG guarantees every glyph appears. `svg2pdf.js` is therefore not a dependency. See the plan's "Deviations" section.)*
 - **ASCII** — `tab.toAscii()` from `@tutts/core`, emitted as UTF-8 text.
 - **alphaTex** — the `tex` string from `toAlphaTex`, emitted as UTF-8 text.
 
@@ -205,7 +205,7 @@ Runtime:
 
 - `@tutts/core`, `@tutts/alphatab` — referenced via **`file:../tutts/packages/core` and `file:../tutts/packages/alphatab` during development**. These switch to published npm version ranges (`^x.y`) before release; that is a one-line change per dependency.
 - `@coderline/alphatab` (^1.6.0) — renderer.
-- `jspdf`, `svg2pdf.js` — PDF export.
+- `jspdf` — PDF export (raster; see the Exports note — `svg2pdf.js` is not used).
 - `@ableton-extensions/sdk` — vendored tarball, same as the sheet music extension.
 
 Dev: `@ableton-extensions/cli` (vendored), `vite`, `vite-plugin-singlefile`, `esbuild`, `tsx`, `typescript`, `vitest`.
