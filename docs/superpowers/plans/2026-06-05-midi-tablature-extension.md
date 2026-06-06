@@ -2096,7 +2096,7 @@ Right-click a MIDI clip in Live and choose **Show Tab** to render it as stringed
 ## How it works
 
 - **Node side** (`src/`) reads the clip + song context and opens a modal webview. It carries no music logic.
-- **Webview** (`ui/`) builds a [`tutts`](../tutts/) `Tuning`, runs `@tutts/core` `generateTab` → `@tutts/alphatab` `toAlphaTex`, and renders the alphaTex to SVG with [AlphaTab](https://alphatab.net/) (low-level, offline, Bravura bundled inline).
+- **Webview** (`ui/`) builds a `tutts` `Tuning`, runs `@tutts/core` `generateTab` → `@tutts/alphatab` `toAlphaTex`, and renders the alphaTex to SVG with [AlphaTab](https://alphatab.net/) (low-level, offline, Bravura bundled inline).
 
 ## Develop
 
@@ -2105,14 +2105,16 @@ Requires the Ableton Extensions SDK (private beta) and the local `tutts` repo bu
 ```bash
 cp .env.example .env          # set ABLETON_SDK_PATH to your unpacked SDK
 npm run setup                 # vendor the SDK tarballs + install
-npm run embed-font            # regenerate the bundled Bravura font (after alphatab bumps)
 npm start                     # build + run in the Extensions CLI
 ```
+
+> The bundled Bravura font (`ui/src/bravura-font.ts`) is committed, so a fresh clone needs nothing extra. Run `npm run embed-font` only if that file is missing or after bumping `@coderline/alphatab`.
 
 | Command | Purpose |
 |---|---|
 | `npm test` | Pure unit tests (CI-safe; no SDK/`tutts` needed). |
 | `npm run test:integration` | `tutts` pipeline test (needs `../tutts` built). |
+| `npm run typecheck` | Type-check the Node side + the webview. |
 | `npm run build` | Production build → `dist/extension.js`. |
 | `npm run package` | Build the installable `.ablx` into `release/`. |
 
