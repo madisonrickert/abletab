@@ -39,7 +39,7 @@ presetSel.value = presetName;
 fretsInput.value = String(payload.settings.fretCount);
 gridSel.value = payload.settings.quantizeGrid;
 
-// ---- Per-string rows. Row 0 is the lowest-numbered string (top of the clef). ----
+// ---- Per-string rows. Row 0 is the lowest-pitched (highest-numbered) string, at the top. ----
 function buildStringRows(): void {
   stringsEl.innerHTML = "";
   tuning.forEach((note, i) => {
@@ -98,7 +98,12 @@ function showWarnings(warnings: string[]): void {
   if (warnings.length) warnBanner.textContent = warnings.join("  •  ");
 }
 function showError(err: unknown): void {
-  scoreEl.innerHTML = `<pre style="color:#b00;white-space:pre-wrap">Render failed: ${String(err)}</pre>`;
+  // textContent (not innerHTML) so an error string can never inject markup.
+  const pre = document.createElement("pre");
+  pre.style.color = "#b00";
+  pre.style.whiteSpace = "pre-wrap";
+  pre.textContent = `Render failed: ${String(err)}`;
+  scoreEl.replaceChildren(pre);
   console.error(err);
 }
 
@@ -160,20 +165,33 @@ function postResult(result: TabResult): void {
 async function doExport(): Promise<void> {
   const formats = selectedFormats();
   if (formats.length === 0) return;
-  const rendered = await render(); // ensure SVG + lastRender reflect current controls
-  if (!lastRender) return;
-  const base = sanitize(payload.clipName);
-  const files: ExportedFile[] = [];
-  for (const fmt of formats) {
-    if (fmt === "ascii") {
-      files.push(asciiFile(base, lastRender.tab));
-    } else if (fmt === "alphatex") {
-      files.push(alphatexFile(base, lastRender.tex));
-    } else if (fmt === "pdf" && rendered) {
-      files.push(await pdfFile(base, rendered.svgs, footerText()));
+  try {
+    const rendered = await render(); // ensure SVG + lastRender reflect current controls
+    if (!lastRender) return; // render failed; the error is already shown — keep the dialog open
+    const base = sanitize(payload.clipName);
+    const files: ExportedFile[] = [];
+    for (const fmt of formats) {
+      if (fmt === "ascii") {
+        files.push(asciiFile(base, lastRender.tab));
+      } else if (fmt === "alphatex") {
+        files.push(alphatexFile(base, lastRender.tex));
+      } else if (fmt === "pdf" && rendered) {
+        files.push(await pdfFile(base, rendered.svgs, footerText()));
+      }
     }
+    if (files.length === 0) {
+      // e.g. only PDF was selected but the SVG render failed — keep the dialog open
+      // instead of closing with an empty result the user would read as success.
+      showWarnings(["Export produced no files — the tab may have failed to render."]);
+      return;
+    }
+    postResult({ files, settings: currentSettings(formats), fingerprint: payload.fingerprint });
+  } catch (err) {
+    // PDF rasterization (the default format) can reject; surface it and keep the
+    // dialog open rather than letting it become a silent unhandled rejection.
+    showWarnings([`Export failed: ${String(err)}`]);
+    console.error(err);
   }
-  postResult({ files, settings: currentSettings(formats), fingerprint: payload.fingerprint });
 }
 
 // ---- Control wiring ----

@@ -2,10 +2,10 @@
 export interface InstrumentPreset {
   name: string;
   /**
-   * String tunings in UI row order — lowest-numbered string first (4th/6th
-   * string at the top), matching how a player reads a tab clef. For most
-   * instruments this is low→high pitch; reentrant tunings (e.g. ukulele) are
-   * listed in conventional string order. Reverse this array to get tutts'
+   * String tunings in UI row order — the lowest-pitched (thickest, highest-
+   * numbered) string first, matching how a player reads a tab clef top-to-bottom.
+   * For most instruments this is ascending pitch; reentrant tunings (e.g. ukulele)
+   * are listed in conventional string order. Reverse this array to get tutts'
    * thin→thick order before constructing a `Tuning`.
    */
   stringNames: string[];
