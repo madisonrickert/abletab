@@ -1278,13 +1278,13 @@ AlphaTab renders SMuFL glyphs (rhythm row, time signature, "TAB" clef) from the 
 // Generates ui/src/bravura-font.ts from the Bravura woff2 that ships inside
 // @coderline/alphatab, so the webview can render SMuFL glyphs fully offline.
 // Re-run after bumping @coderline/alphatab. Output is committed.
-import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, lstatSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 function findFile(dir, predicate) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
-    const st = statSync(full);
+    const st = lstatSync(full); // lstat: don't follow symlinks, so a symlink cycle can't loop
     if (st.isDirectory()) {
       const hit = findFile(full, predicate);
       if (hit) return hit;
@@ -1296,6 +1296,10 @@ function findFile(dir, predicate) {
 }
 
 const root = "node_modules/@coderline/alphatab";
+if (!existsSync(root)) {
+  console.error(`\n  embed-font: ${root} not found — run \`npm install\` first.\n`);
+  process.exit(1);
+}
 const woff2 = findFile(root, (f) => /^Bravura.*\.woff2$/i.test(f));
 if (!woff2) {
   console.error("\n  embed-font: could not find Bravura*.woff2 under " + root + ".\n");
