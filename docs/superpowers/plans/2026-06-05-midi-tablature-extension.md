@@ -955,11 +955,11 @@ const NOTE_OPTIONS = chromaticNoteNames(0, 6);
 
 /** Reveal a saved file in Finder (best-effort; macOS `open -R`). */
 function revealInFinder(filePath: string): void {
-  try {
-    execFile("open", ["-R", filePath], () => {});
-  } catch (err) {
-    console.error("Tablature: couldn't reveal the file in Finder.", err);
-  }
+  // execFile reports errors via its callback (it does not throw synchronously),
+  // so log there. A failed reveal is non-fatal.
+  execFile("open", ["-R", filePath], (err) => {
+    if (err) console.error("Tablature: couldn't reveal the file in Finder.", err);
+  });
 }
 
 export function activate(activation: ActivationContext) {
@@ -1019,7 +1019,9 @@ export function activate(activation: ActivationContext) {
     await fs.mkdir(dir, { recursive: true });
     const written: string[] = [];
     for (const f of files) {
-      const dest = path.join(dir, f.name);
+      // Defense in depth: basename strips any path components so a webview-supplied
+      // name can't escape tabs/ (the webview also sanitizes the name before sending).
+      const dest = path.join(dir, path.basename(f.name));
       if (f.encoding === "base64") await fs.writeFile(dest, Buffer.from(f.data, "base64"));
       else await fs.writeFile(dest, f.data, "utf-8");
       written.push(dest);
