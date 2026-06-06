@@ -1504,10 +1504,16 @@ const fakeTab = {
 
 describe("sanitize", () => {
   it("strips path-hostile characters", () => {
-    expect(sanitize('A/B:C*?"<>|')).toBe("A_B_C_____");
+    expect(sanitize('A/B:C*?"<>|')).toBe("A_B_C______"); // 3 letters + 8 replaced specials
+  });
+  it("strips backslashes too", () => {
+    expect(sanitize("A\\B")).toBe("A_B");
   });
   it("falls back to 'tab' when empty", () => {
     expect(sanitize("   ")).toBe("tab");
+  });
+  it("caps very long names to a filesystem-safe length", () => {
+    expect(sanitize("x".repeat(300)).length).toBe(200);
   });
 });
 
@@ -1537,9 +1543,11 @@ Expected: FAIL — "Cannot find module './export'".
 import type { GeneratedTab } from "@tutts/core";
 import type { ExportedFile } from "../../src/payload";
 
-/** Make a clip name safe as a file name; never empty. */
+/** Make a clip name safe as a file name: strip path-hostile chars, never empty,
+ *  and cap the length so the OS can't reject it (filenames have a 255-byte limit;
+ *  200 leaves room for the extension suffix). */
 export function sanitize(name: string): string {
-  return name.replace(/[\\/:*?"<>|]/g, "_").trim() || "tab";
+  return (name.replace(/[\\/:*?"<>|]/g, "_").trim() || "tab").slice(0, 200);
 }
 
 export function asciiFile(base: string, tab: GeneratedTab): ExportedFile {
@@ -1615,7 +1623,8 @@ export async function pdfFile(base: string, svgs: SVGSVGElement[], footer: strin
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth || w;
     canvas.height = img.naturalHeight || h;
-    const cctx = canvas.getContext("2d")!;
+    const cctx = canvas.getContext("2d");
+    if (!cctx) throw new Error("pdfFile: canvas 2d context unavailable");
     cctx.fillStyle = "#fff";
     cctx.fillRect(0, 0, canvas.width, canvas.height);
     cctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -2122,6 +2131,7 @@ Then drag `release/Tablature-0.1.0.ablx` onto Live → Preferences → Extension
 
 In Live, create a MIDI clip with a short monophonic riff and a couple of chords, then right-click → **Show Tab**. Verify:
   - [ ] The tab renders with readable fret numbers, the rhythm row, the time signature, and the "TAB" clef (glyphs are real, not boxes — if they are boxes, the Bravura `@font-face`/`smuflFontSources` wiring in `render.ts` needs the correct `FontFileFormat`/family; re-check Task 8 step 2).
+  - [ ] (Optimization) In devtools, inspect a glyph `<text>` element in `#score` and note its `font-family`. `render.ts` and `pdf.ts` register Bravura under both `"alphaTab"` and `"Bravura"` defensively; if only one family is actually referenced, drop the unused `@font-face`/`FontFace` registration to halve the per-chunk PDF font payload.
   - [ ] Switching the **Instrument** preset re-renders with the new tuning and updates the per-string rows + fret count.
   - [ ] Editing a per-string note flips the preset selector to **Custom** and re-renders.
   - [ ] **+ / −** add/remove a string within 4–8 and re-render.
