@@ -1160,18 +1160,28 @@ describe("runPipeline", () => {
     expect(out.tab.toAscii().length).toBeGreaterThan(0);
   });
 
-  it("treats quantizeGrid 'off' as no snapping (still renders)", () => {
-    const out = runPipeline({
-      notes,
+  it("quantizeGrid 'off' preserves an off-grid onset that a coarse grid would snap", () => {
+    // A note at beat 0.5 sits off the 1/4 (one-beat) grid; "off" must leave it,
+    // while "1/4" snaps it — so the two renderings must differ. This pins the
+    // module's own `"off" -> undefined` mapping (the snapping itself is tutts').
+    const offGrid = [
+      { midi: 40, startBeats: 0, durationBeats: 0.5 },
+      { midi: 45, startBeats: 0.5, durationBeats: 0.5 },
+      { midi: 50, startBeats: 1.5, durationBeats: 0.5 },
+    ];
+    const common = {
       stringNames: ["E2", "A2", "D3", "G3", "B3", "E4"],
       fretCount: 20,
-      quantizeGrid: "off",
       tempo: 120,
       timeSig: { numerator: 4, denominator: 4 },
       title: "Test",
       tuningLabel: "Standard Guitar",
-    });
-    expect(out.tex.length).toBeGreaterThan(20);
+    };
+    const off = runPipeline({ ...common, notes: offGrid, quantizeGrid: "off" });
+    const snapped = runPipeline({ ...common, notes: offGrid, quantizeGrid: "1/4" });
+    expect(off.tex.length).toBeGreaterThan(20);
+    expect(off.tab.toAscii().length).toBeGreaterThan(0);
+    expect(off.tex).not.toBe(snapped.tex); // "off" did not snap to the 1/4 grid
   });
 });
 ```
