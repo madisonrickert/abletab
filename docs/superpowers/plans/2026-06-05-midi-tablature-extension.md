@@ -1672,7 +1672,7 @@ The toolbar, the dynamic per-string rows, and the controller that ties payload â
     <title>Tablature</title>
     <style>
       :root {
-        --bg: #383838; --panel: #4e4e4e; --accent: #ffa500; --text: #d0d0d0;
+        --panel: #4e4e4e; --accent: #ffa500; --text: #d0d0d0;
         --border: #2c2c2c; --input: #2c2c2c; --warn: #c8862b;
         --muted: #9a9a9a; --bar-h: 42px;
       }
@@ -1900,6 +1900,7 @@ function updateStatus(): void {
 
 // ---- The render pipeline (re-run on any control change). ----
 async function render(): Promise<RenderedScore | null> {
+  lastRender = null; // clear stale state so a pipeline failure gates doExport's guard
   try {
     const out = runPipeline({
       notes: payload.notes,
@@ -1918,6 +1919,7 @@ async function render(): Promise<RenderedScore | null> {
     updateStatus();
     return rendered;
   } catch (err) {
+    showWarnings([]); // don't leave a stale warning banner over the error
     showError(err);
     return null;
   }
@@ -1987,7 +1989,7 @@ gridSel.addEventListener("change", () => void render());
 
 $<HTMLButtonElement>("addString").addEventListener("click", () => {
   if (tuning.length >= MAX_STRINGS) return;
-  // Add a new lowest string a fourth below the current lowest (best-effort default).
+  // Duplicate the current lowest string as a placeholder; the user picks the real note.
   tuning = [tuning[0], ...tuning];
   markCustom();
   buildStringRows();
@@ -2039,7 +2041,8 @@ document.addEventListener("keydown", (e) => {
 
 // Close without exporting (the SDK modal has no working native close button).
 $<HTMLButtonElement>("closeBtn").addEventListener("click", () =>
-  postResult({ files: [], settings: currentSettings(payload.settings.formats), fingerprint: payload.fingerprint }),
+  // Persist the live UI state (incl. the current format checkboxes) on close, like the other controls.
+  postResult({ files: [], settings: currentSettings(selectedFormats()), fingerprint: payload.fingerprint }),
 );
 
 // ---- Initial render. Defer two frames so the score container has a real width. ----
