@@ -1,7 +1,7 @@
 {
   "name": "ableton-midi-tabs-extension",
   "version": "0.1.0",
-  "description": "View an Ableton Live MIDI clip as stringed-instrument tablature, configure the tuning, and export PDF / ASCII tab / alphaTex.",
+  "description": "View an Ableton Live MIDI clip as stringed-instrument tablature, configure the tuning, and export PDF / ASCII tab.",
   "license": "MIT",
   "main": "dist/extension.js",
   "engines": {
