@@ -4,7 +4,9 @@
   "description": "View an Ableton Live MIDI clip as stringed-instrument tablature, configure the tuning, and export PDF / ASCII tab / alphaTex.",
   "license": "MIT",
   "main": "dist/extension.js",
-  "engines": { "node": ">=24.14.1" },
+  "engines": {
+    "node": ">=24.14.1"
+  },
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup-sdk.mjs && npm install",
@@ -31,6 +33,7 @@
     "@ableton-extensions/cli": "file:vendor/ableton-extensions-cli.tgz",
     "@types/node": "^24.1.0",
     "esbuild": "0.28.0",
+    "happy-dom": "^20.9.0",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.0",
