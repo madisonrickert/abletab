@@ -1,6 +1,6 @@
 import { runPipeline, type PipelineOutput } from "./tab-pipeline";
-import { renderAlphaTex, type RenderedScore } from "./render";
-import { sanitize, asciiFile, alphatexFile } from "./export";
+import { renderAscii } from "./render";
+import { sanitize, asciiFile } from "./export";
 import { pdfFile } from "./pdf";
 import type { TabPayload, TabResult, TabSettings, TabFormat, TabQuantize, ExportedFile } from "../../src/payload";
 import { CUSTOM_PRESET_NAME, MIN_STRINGS, MAX_STRINGS } from "../../src/instruments";
@@ -113,7 +113,7 @@ function updateStatus(): void {
 }
 
 // ---- The render pipeline (re-run on any control change). ----
-async function render(): Promise<RenderedScore | null> {
+function render(): PipelineOutput | null {
   lastRender = null; // clear stale state so a pipeline failure gates doExport's guard
   try {
     const out = runPipeline({
@@ -127,11 +127,10 @@ async function render(): Promise<RenderedScore | null> {
       tuningLabel: presetName,
     });
     lastRender = out;
-    const width = Math.max(scoreEl.clientWidth - 4, 320);
-    const rendered = await renderAlphaTex(out.tex, scoreEl, width);
+    renderAscii(out.tab, scoreEl);
     showWarnings(out.warnings);
     updateStatus();
-    return rendered;
+    return out;
   } catch (err) {
     showWarnings([]); // don't leave a stale warning banner over the error
     showError(err);
@@ -162,33 +161,29 @@ function postResult(result: TabResult): void {
   else console.log("close_and_send", message); // browser dev fallback
 }
 
-async function doExport(): Promise<void> {
+function doExport(): void {
   const formats = selectedFormats();
   if (formats.length === 0) return;
   try {
-    const rendered = await render(); // ensure SVG + lastRender reflect current controls
+    render(); // ensure the view + lastRender reflect the current controls
     if (!lastRender) return; // render failed; the error is already shown — keep the dialog open
     const base = sanitize(payload.clipName);
     const files: ExportedFile[] = [];
     for (const fmt of formats) {
       if (fmt === "ascii") {
         files.push(asciiFile(base, lastRender.tab));
-      } else if (fmt === "alphatex") {
-        files.push(alphatexFile(base, lastRender.tex));
-      } else if (fmt === "pdf" && rendered) {
-        files.push(await pdfFile(base, rendered.svgs, footerText()));
+      } else if (fmt === "pdf") {
+        files.push(pdfFile(base, lastRender.tab, footerText()));
       }
     }
     if (files.length === 0) {
-      // e.g. only PDF was selected but the SVG render failed — keep the dialog open
-      // instead of closing with an empty result the user would read as success.
       showWarnings(["Export produced no files — the tab may have failed to render."]);
       return;
     }
     postResult({ files, settings: currentSettings(formats), fingerprint: payload.fingerprint });
   } catch (err) {
-    // PDF rasterization (the default format) can reject; surface it and keep the
-    // dialog open rather than letting it become a silent unhandled rejection.
+    // Surface any export failure and keep the dialog open rather than letting it
+    // become a silent error.
     showWarnings([`Export failed: ${String(err)}`]);
     console.error(err);
   }

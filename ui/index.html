@@ -28,7 +28,7 @@
       .pill.primary { width: 100%; margin-top: 6px; }
       .score-scroll { overflow: auto; background: #fff; padding: 18px 20px; }
       #score { background: #fff; }
-      #score svg { display: block; margin: 0 auto 8px; }
+      #score pre.tab { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; line-height: 1.25; margin: 0; white-space: pre; }
       .caption { display: block; margin-top: 16px; color: #9a9a9a; font-size: 11px; }
       .banner { padding: 6px 12px; font-weight: 600; }
       .banner.stale { background: var(--warn); color: #000; }
@@ -95,7 +95,6 @@
           <div id="exportPanel" class="popover" hidden>
             <label class="exportFmt"><input type="checkbox" class="exportFmt-cb" value="pdf" /> PDF</label>
             <label class="exportFmt"><input type="checkbox" class="exportFmt-cb" value="ascii" /> ASCII tab (.txt)</label>
-            <label class="exportFmt"><input type="checkbox" class="exportFmt-cb" value="alphatex" /> alphaTex (.txt)</label>
             <button type="button" id="exportBtn" class="pill primary">Export</button>
             <span class="auto-note">Saves to the storage folder and reveals it in Finder.</span>
           </div>
