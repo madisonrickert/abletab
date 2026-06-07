@@ -37,6 +37,7 @@ function revealInFinder(filePath: string): void {
 }
 
 export function activate(activation: ActivationContext) {
+  console.log("Tablature: activating.");
   const ctx = initialize(activation, "1.0.0");
 
   const storageDir = () => {
@@ -147,6 +148,7 @@ export function activate(activation: ActivationContext) {
         };
         const html = injectPayload(bundledHtml, payload);
         const uiPath = path.join(tempDir(), "tab-ui.html");
+        await fs.mkdir(tempDir(), { recursive: true });
         await fs.writeFile(uiPath, html, "utf-8");
 
         const raw = await ctx.ui.showModalDialog(fileUrl(uiPath), 900, 640);
@@ -166,4 +168,5 @@ export function activate(activation: ActivationContext) {
   });
 
   ctx.ui.registerContextMenuAction("MidiClip", "Show Tab", "tablature.showTab");
+  console.log('Tablature: registered "Show Tab" context menu action for MidiClip.');
 }
