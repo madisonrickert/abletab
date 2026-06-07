@@ -1,7 +1,7 @@
 import type { NoteModel, TimeSignature } from "./notation/types";
 import type { InstrumentPreset } from "./instruments";
 
-export type TabFormat = "pdf" | "ascii" | "alphatex";
+export type TabFormat = "pdf" | "ascii";
 
 /** "off" disables onset snapping; the rest map to tutts' QuantizeGrid. */
 export type TabQuantize = "off" | "1/4" | "1/8" | "1/16" | "1/32";

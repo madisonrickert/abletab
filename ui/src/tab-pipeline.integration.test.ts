@@ -18,7 +18,7 @@ describe("runPipeline", () => {
     { midi: 55, startBeats: 3, durationBeats: 1 },
   ];
 
-  it("produces non-empty alphaTex with a tuning directive", () => {
+  it("produces a tab whose ASCII has one line per string", () => {
     const out = runPipeline({
       notes,
       stringNames: ["E2", "A2", "D3", "G3", "B3", "E4"],
@@ -29,16 +29,15 @@ describe("runPipeline", () => {
       title: "Test Riff",
       tuningLabel: "Standard Guitar",
     });
-    expect(out.tex).toContain("\\tuning");
-    expect(out.tex).toContain("\\title");
-    expect(out.tex.length).toBeGreaterThan(20);
-    expect(Array.isArray(out.warnings)).toBe(true);
+    expect(out.tab.toLines()).toHaveLength(6);
     expect(out.tab.toAscii().length).toBeGreaterThan(0);
+    expect(out.tab.toAscii()).toContain("|"); // barlines present
+    expect(Array.isArray(out.warnings)).toBe(true);
   });
 
   it("quantizeGrid 'off' preserves an off-grid onset that a coarse grid would snap", () => {
     // A note at beat 0.5 sits off the 1/4 (one-beat) grid; "off" must leave it,
-    // while "1/4" snaps it — so the two renderings must differ. This pins the
+    // while "1/4" snaps it — so the note-event onsets must differ. This pins the
     // module's own `"off" -> undefined` mapping (the snapping itself is tutts').
     const offGrid = [
       { midi: 40, startBeats: 0, durationBeats: 0.5 },
@@ -53,10 +52,14 @@ describe("runPipeline", () => {
       title: "Test",
       tuningLabel: "Standard Guitar",
     };
+    const onsets = (out: ReturnType<typeof runPipeline>) =>
+      out.tab.data.measures
+        .flatMap((m) => m.events)
+        .filter((e) => e.notes)
+        .map((e) => e.beats);
     const off = runPipeline({ ...common, notes: offGrid, quantizeGrid: "off" });
     const snapped = runPipeline({ ...common, notes: offGrid, quantizeGrid: "1/4" });
-    expect(off.tex.length).toBeGreaterThan(20);
     expect(off.tab.toAscii().length).toBeGreaterThan(0);
-    expect(off.tex).not.toBe(snapped.tex); // "off" did not snap to the 1/4 grid
+    expect(onsets(off)).not.toEqual(onsets(snapped)); // "off" did not snap to the 1/4 grid
   });
 });

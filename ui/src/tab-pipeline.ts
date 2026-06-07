@@ -1,5 +1,4 @@
 import { generateTab, Tuning, type GeneratedTab } from "@tutts/core";
-import { toAlphaTex } from "@tutts/alphatab";
 import type { NoteModel } from "../../src/notation/types";
 import type { TabQuantize } from "../../src/payload";
 
@@ -24,11 +23,10 @@ export interface PipelineInput {
 
 export interface PipelineOutput {
   tab: GeneratedTab;
-  tex: string;
   warnings: string[];
 }
 
-/** notes + tuning + grid -> fingered tab -> alphaTex. Pure; no DOM, no AlphaTab. */
+/** notes + tuning + grid -> fingered tab. Pure; no DOM, no renderer. */
 export function runPipeline(input: PipelineInput): PipelineOutput {
   const tuning = buildTuning(input.stringNames, input.fretCount);
   const tab = generateTab({
@@ -40,10 +38,5 @@ export function runPipeline(input: PipelineInput): PipelineOutput {
       { numerator: input.timeSig.numerator, denominator: input.timeSig.denominator, startBeats: 0 },
     ],
   });
-  const { tex, warnings } = toAlphaTex(tab.data, {
-    title: input.title,
-    tempo: input.tempo,
-    tuningLabel: input.tuningLabel,
-  });
-  return { tab, tex, warnings };
+  return { tab, warnings: [] };
 }

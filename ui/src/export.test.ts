@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitize, asciiFile, alphatexFile } from "./export";
+import { sanitize, asciiFile } from "./export";
 import type { GeneratedTab } from "@tutts/core";
 
 // A minimal fake — export.ts only calls toAscii(), so the rest can be stubbed.
@@ -28,12 +28,5 @@ describe("asciiFile", () => {
   it("wraps toAscii() output as a .txt text file", () => {
     const f = asciiFile("Verse", fakeTab);
     expect(f).toEqual({ name: "Verse.txt", format: "ascii", encoding: "text", data: "e|---0---|\nB|--------|\n" });
-  });
-});
-
-describe("alphatexFile", () => {
-  it("wraps the tex string as a .alphatex.txt text file", () => {
-    const f = alphatexFile("Verse", "\\title \"Verse\"\n.");
-    expect(f).toEqual({ name: "Verse.alphatex.txt", format: "alphatex", encoding: "text", data: '\\title "Verse"\n.' });
   });
 });

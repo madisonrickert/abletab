@@ -11,7 +11,3 @@ export function sanitize(name: string): string {
 export function asciiFile(base: string, tab: GeneratedTab): ExportedFile {
   return { name: `${base}.txt`, format: "ascii", encoding: "text", data: tab.toAscii() };
 }
-
-export function alphatexFile(base: string, tex: string): ExportedFile {
-  return { name: `${base}.alphatex.txt`, format: "alphatex", encoding: "text", data: tex };
-}
