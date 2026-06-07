@@ -48,6 +48,21 @@
       .string-controls { display: flex; gap: 4px; margin-top: 4px; }
       .auto-note { color: var(--muted); font-style: italic; font-size: 11px; }
       .exportFmt { display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
+      /* Credits overlay (template adapted from ablevsep) */
+      #infoBtn { font-size: 15px; line-height: 1; }
+      .overlay { position: fixed; inset: 0; z-index: 20; background: #2c2c2c; color: var(--text);
+                 padding: 18px 22px; display: flex; flex-direction: column; overflow: auto; }
+      .overlay[hidden] { display: none; }
+      .overlay a { color: var(--accent); text-decoration: none; }
+      .overlay a:hover { text-decoration: underline; }
+      .overlay h2 { font-size: 16px; font-weight: 650; margin: 2px 0 0; color: #fff; }
+      .overlay .tagline { color: var(--muted); font-size: 12px; margin: 8px 0 12px; line-height: 1.5; }
+      .overlay .bio { color: var(--text); font-size: 12.5px; line-height: 1.6; margin: 0 0 14px; }
+      .credit-note { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+      .overlay-actions { margin-top: auto; padding-top: 16px; display: flex; justify-content: flex-end; }
+      .overlay-actions button { background: var(--panel); color: var(--text); border: 1px solid #555;
+                                border-radius: 10px; padding: 6px 16px; cursor: pointer; font: inherit; }
+      .overlay-actions button:hover { background: #5a5a5a; }
     </style>
   </head>
   <body>
@@ -100,6 +115,7 @@
           </div>
         </div>
 
+        <button type="button" id="infoBtn" class="ghost icon" title="Credits" aria-label="Credits">ⓘ</button>
         <button type="button" id="closeBtn" class="ghost icon" title="Close" aria-label="Close">✕</button>
       </header>
 
@@ -112,6 +128,14 @@
         <div id="score"></div>
         <span id="status" class="caption"></span>
       </main>
+    </div>
+
+    <div id="credits" class="overlay" hidden>
+      <h2>Tablature</h2>
+      <p class="tagline">View an Ableton Live MIDI clip as stringed-instrument tablature, then export to PDF or ASCII tab.</p>
+      <p class="bio"><strong>About the Creator:</strong> Hope you're enjoying Tablature! I'm <a href="https://madisonrickert.com" target="_blank" rel="noreferrer">Madison Rickert</a>. I've been both a software engineer and a musician for over 20 years, and it's my joy building tools to empower artists. I create and perform my own music as <a href="https://toefood.music" target="_blank" rel="noreferrer">Toefood</a>.</p>
+      <p class="credit-note">Tab algorithm by <a href="https://github.com/natecdr/tuttut" target="_blank" rel="noreferrer">tuttut</a>, originally by Nathan Cordier.</p>
+      <div class="overlay-actions"><button type="button" id="creditsClose">Back</button></div>
     </div>
 
     <script type="module" src="./src/main.ts"></script>

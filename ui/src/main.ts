@@ -18,6 +18,7 @@ const scoreEl = $<HTMLDivElement>("score");
 const statusEl = $<HTMLSpanElement>("status");
 const staleBanner = $<HTMLDivElement>("staleBanner");
 const warnBanner = $<HTMLDivElement>("warnBanner");
+const creditsOverlay = $<HTMLDivElement>("credits");
 
 // ---- Mutable UI state (the source of truth for re-renders). ----
 let tuning: string[] = [...payload.settings.tuning];
@@ -258,7 +259,20 @@ for (const [toggleId, panelId] of POPOVERS) {
 }
 document.addEventListener("click", closeAllPopovers);
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeAllPopovers();
+  if (e.key === "Escape") {
+    closeAllPopovers();
+    creditsOverlay.hidden = true;
+  }
+});
+
+// ---- Credits overlay (info button → full-screen credits) ----
+$<HTMLButtonElement>("infoBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  closeAllPopovers();
+  creditsOverlay.hidden = false;
+});
+$<HTMLButtonElement>("creditsClose").addEventListener("click", () => {
+  creditsOverlay.hidden = true;
 });
 
 // Close without exporting (the SDK modal has no working native close button).
