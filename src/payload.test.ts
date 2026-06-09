@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { injectPayload, escapeForScriptJson, PAYLOAD_TOKEN, type TabPayload } from "./payload";
+import {
+  injectLicenses,
+  injectPayload,
+  escapeForScriptJson,
+  LICENSES_TOKEN,
+  PAYLOAD_TOKEN,
+  type TabPayload,
+} from "./payload";
 import { INSTRUMENTS, chromaticNoteNames } from "./instruments";
 
 const payload: TabPayload = {
@@ -47,5 +54,28 @@ describe("injectPayload", () => {
 
   it("throws when the token is missing", () => {
     expect(() => injectPayload("<html></html>", payload)).toThrow(/token/i);
+  });
+});
+
+describe("injectLicenses", () => {
+  const html = `<script id="licenses-payload" type="application/json">${LICENSES_TOKEN}</script>`;
+
+  it("encodes the notices as an escaped JSON string that round-trips", () => {
+    const notices = 'MIT License\n\n</script><b>nope</b>\nCopyright (c) "someone"';
+    const result = injectLicenses(html, notices);
+    expect(result).not.toContain(LICENSES_TOKEN);
+    expect(result).not.toContain("</script><b>"); // `<` escaped: can't close the host tag
+    const json = result.match(/type="application\/json">([\s\S]*?)<\/script>/)![1];
+    expect(JSON.parse(json)).toBe(notices);
+  });
+
+  it("does not expand $-patterns from license text", () => {
+    const result = injectLicenses(html, "fee of $& or $` per copy");
+    const json = result.match(/type="application\/json">([\s\S]*?)<\/script>/)![1];
+    expect(JSON.parse(json)).toBe("fee of $& or $` per copy");
+  });
+
+  it("throws when the token is missing", () => {
+    expect(() => injectLicenses("<html></html>", "MIT")).toThrow(/token/i);
   });
 });

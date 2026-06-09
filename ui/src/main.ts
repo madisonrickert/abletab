@@ -108,9 +108,14 @@ function showError(err: unknown): void {
   console.error(err);
 }
 
+/** Live reports tempo as a float (e.g. 117.33333); one decimal is plenty for provenance. */
+function formatTempo(tempo: number): string {
+  return `${Math.round(tempo * 10) / 10} bpm`;
+}
+
 function updateStatus(): void {
   const p = payload.provenance;
-  statusEl.textContent = `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${p.tempo} bpm · #${p.fingerprint}`;
+  statusEl.textContent = `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${formatTempo(p.tempo)} · #${p.fingerprint}`;
 }
 
 // ---- The render pipeline (re-run on any control change). ----
@@ -142,7 +147,7 @@ function render(): PipelineOutput | null {
 // ---- Export ----
 function footerText(): string {
   const p = payload.provenance;
-  return `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${p.tempo} bpm · #${p.fingerprint} · ${p.generatedAt}`;
+  return `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${formatTempo(p.tempo)} · #${p.fingerprint} · ${p.generatedAt}`;
 }
 
 function selectedFormats(): TabFormat[] {
@@ -206,7 +211,16 @@ presetSel.addEventListener("change", () => {
   }
 });
 
-fretsInput.addEventListener("change", () => void render()); // fret count is orthogonal to preset identity
+// Fret count is orthogonal to preset identity. HTML min/max only constrain the
+// steppers, not typed values, so clamp before re-rendering.
+fretsInput.addEventListener("change", () => {
+  const v = Number(fretsInput.value);
+  const clamped = Number.isFinite(v)
+    ? Math.min(Number(fretsInput.max), Math.max(Number(fretsInput.min), Math.round(v)))
+    : payload.settings.fretCount;
+  fretsInput.value = String(clamped);
+  void render();
+});
 
 gridSel.addEventListener("change", () => void render());
 
@@ -265,7 +279,16 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// ---- Credits overlay (info button → full-screen credits) ----
+// ---- Credits overlay (info button → full-screen credits with embedded licenses) ----
+// extension.ts injects the build-generated notices as a JSON string at launch.
+// In `dev:ui` the token is never replaced, so fall back instead of crashing.
+try {
+  const raw = $<HTMLScriptElement>("licenses-payload").textContent ?? "";
+  $<HTMLPreElement>("licensesText").textContent = JSON.parse(raw) as string;
+} catch {
+  $<HTMLPreElement>("licensesText").textContent =
+    "Open-source license notices are generated at build time.";
+}
 $<HTMLButtonElement>("infoBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   closeAllPopovers();

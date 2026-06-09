@@ -51,6 +51,7 @@ export interface TabResult {
 }
 
 export const PAYLOAD_TOKEN = "__TAB_PAYLOAD_JSON__";
+export const LICENSES_TOKEN = "__THIRD_PARTY_LICENSES_JSON__";
 
 /**
  * Escape `<` so the JSON cannot break out of its <script type="application/json"> host
@@ -67,4 +68,16 @@ export function injectPayload(html: string, payload: TabPayload): string {
   // string replacement, `$&`/`$'`/`` $` ``/`$$` in the JSON (e.g. a clip named
   // "$& Intro") would be expanded as special patterns and corrupt the payload.
   return html.replace(PAYLOAD_TOKEN, () => escapeForScriptJson(JSON.stringify(payload)));
+}
+
+/**
+ * Replace the licenses token with the build-generated third-party notices, encoded
+ * as a JSON string so the (multi-line, punctuation-heavy) text can't break out of its
+ * <script type="application/json"> host. The webview JSON.parses it and renders it as
+ * textContent — never innerHTML — so there is no HTML-injection surface. The function
+ * replacement keeps any `$&`-style patterns in license text verbatim.
+ */
+export function injectLicenses(html: string, notices: string): string {
+  if (!html.includes(LICENSES_TOKEN)) throw new Error("licenses token not found in webview HTML");
+  return html.replace(LICENSES_TOKEN, () => escapeForScriptJson(JSON.stringify(notices)));
 }

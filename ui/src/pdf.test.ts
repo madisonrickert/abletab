@@ -14,6 +14,10 @@ vi.mock("jspdf", () => {
     addPage() {
       calls.pages++;
     }
+    getNumberOfPages() {
+      return calls.pages;
+    }
+    setPage() {}
     output() {
       return "data:application/pdf;base64,QUJD";
     }

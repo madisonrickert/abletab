@@ -1,7 +1,7 @@
 {
-  "name": "Tablature",
+  "name": "AbleTab",
   "author": "Madison Rickert",
   "entry": "dist/extension.js",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "minimumApiVersion": "1.0.0"
 }

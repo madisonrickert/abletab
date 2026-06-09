@@ -40,10 +40,16 @@ export function pdfFile(base: string, tab: GeneratedTab, footer: string): Export
     y += SYSTEM_GAP_PT;
   }
 
+  // Provenance footer on every page (drawn after pagination so the page count is final).
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   pdf.setTextColor(110);
-  pdf.text(footer, MARGIN, pageH - 12);
+  const pageCount = pdf.getNumberOfPages();
+  for (let page = 1; page <= pageCount; page++) {
+    pdf.setPage(page);
+    const label = pageCount > 1 ? `${footer} · p. ${page}/${pageCount}` : footer;
+    pdf.text(label, MARGIN, pageH - 12);
+  }
 
   return {
     name: `${base}.pdf`,

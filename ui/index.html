@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tablature</title>
+    <title>AbleTab</title>
     <style>
       :root {
         --panel: #4e4e4e; --accent: #ffa500; --text: #d0d0d0;
@@ -63,10 +63,19 @@
       .overlay-actions button { background: var(--panel); color: var(--text); border: 1px solid #555;
                                 border-radius: 10px; padding: 6px 16px; cursor: pointer; font: inherit; }
       .overlay-actions button:hover { background: #5a5a5a; }
+      /* Licenses live inline in the credits panel: a labeled sub-panel that fills
+         the otherwise-empty space below the bio and scrolls on its own. */
+      .licenses-head { font-size: 13px; font-weight: 600; line-height: 1.2; color: #fff;
+                       margin: 14px 0 8px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .licenses-pre { flex: 1 1 0; min-height: 0; overflow: auto; margin: 0; background: var(--input);
+                      border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+                      color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+                      font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
     </style>
   </head>
   <body>
     <script id="tab-payload" type="application/json">__TAB_PAYLOAD_JSON__</script>
+    <script id="licenses-payload" type="application/json">__THIRD_PARTY_LICENSES_JSON__</script>
 
     <div class="app">
       <header class="topbar">
@@ -131,10 +140,12 @@
     </div>
 
     <div id="credits" class="overlay" hidden>
-      <h2>Tablature</h2>
+      <h2>AbleTab</h2>
       <p class="tagline">View an Ableton Live MIDI clip as stringed-instrument tablature, then export to PDF or ASCII tab.</p>
-      <p class="bio"><strong>About the Creator:</strong> Hope you're enjoying Tablature! I'm <a href="https://madisonrickert.com" target="_blank" rel="noreferrer">Madison Rickert</a>. I've been both a software engineer and a musician for over 20 years, and it's my joy building tools to empower artists. I create and perform my own music as <a href="https://toefood.music" target="_blank" rel="noreferrer">Toefood</a>.</p>
-      <p class="credit-note">Tab algorithm by <a href="https://github.com/natecdr/tuttut" target="_blank" rel="noreferrer">tuttut</a>, originally by Nathan Cordier.</p>
+      <p class="bio"><strong>About the Creator:</strong> Hope you're enjoying AbleTab! I'm <a href="https://madisonrickert.com" target="_blank" rel="noreferrer">Madison Rickert</a>. I've been both a software engineer and a musician for over 20 years, and it's my joy building tools to empower artists. I create and perform my own music as <a href="https://toefood.music" target="_blank" rel="noreferrer">Toefood</a>.</p>
+      <p class="credit-note">Fingerings chosen with <a href="https://github.com/madisonrickert/tutts" target="_blank" rel="noreferrer">tutts</a>, a TypeScript port of <a href="https://github.com/natecdr/tuttut" target="_blank" rel="noreferrer">tuttut</a> by Nathan Candre.</p>
+      <h3 class="licenses-head">Open source licenses</h3>
+      <pre id="licensesText" class="licenses-pre"></pre>
       <div class="overlay-actions"><button type="button" id="creditsClose">Back</button></div>
     </div>
 
