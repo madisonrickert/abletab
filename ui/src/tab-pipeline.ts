@@ -1,4 +1,4 @@
-import { generateTab, Tuning, type GeneratedTab } from "@tutts/core";
+import { generateTab, Tuning, type GeneratedTab } from "tutts";
 import type { NoteModel } from "../../src/notation/types";
 import type { TabQuantize } from "../../src/payload";
 

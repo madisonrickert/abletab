@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from "vitest";
-import { generateTab, Tuning } from "@tutts/core";
+import { generateTab, Tuning } from "tutts";
 import { renderAscii, columnsForWidth } from "./render";
 
 describe("columnsForWidth", () => {

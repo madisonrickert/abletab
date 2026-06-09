@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@ableton-extensions/sdk": "file:vendor/ableton-extensions-sdk.tgz",
-    "@tutts/core": "file:../tutts/packages/core",
+    "tutts": "^0.1.0",
     "jspdf": "^2.5.2"
   },
   "devDependencies": {

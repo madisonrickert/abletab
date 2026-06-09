@@ -15,16 +15,25 @@ jobs:
         with:
           node-version: "24"
 
-      # The Ableton SDK (private beta tarball) and the @tutts/* packages (local
-      # file: deps until published to npm) cannot be resolved in CI. Drop them and
-      # verify the SDK/tutts-independent core: the pure modules and their unit
-      # tests. Re-enable the UI type-check + build here once @tutts/* is on npm.
-      - name: Drop unresolvable deps for CI
+      # The Ableton Extensions SDK is a local beta tarball that is not published
+      # to npm and is intentionally not committed. CI verifies the SDK-independent
+      # core: the notation modules, the tutts pipeline, the unit and integration
+      # tests, and the webview bundle.
+      - name: Drop the SDK dependencies for CI
         run: |
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));for(const k of ['dependencies','devDependencies']){if(p[k]){for(const d of ['@ableton-extensions/sdk','@ableton-extensions/cli','@tutts/core','@tutts/alphatab']) delete p[k][d];}}fs.writeFileSync('package.json',JSON.stringify(p,null,2));"
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));for(const k of ['dependencies','devDependencies']){if(p[k]){delete p[k]['@ableton-extensions/sdk'];delete p[k]['@ableton-extensions/cli'];}}fs.writeFileSync('package.json',JSON.stringify(p,null,2));"
 
       - name: Install dependencies
         run: npm install --no-package-lock
 
       - name: Unit tests
         run: npm test
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Type-check the webview
+        run: npx tsc -p ui/tsconfig.json
+
+      - name: Build the webview bundle
+        run: npm run build:ui

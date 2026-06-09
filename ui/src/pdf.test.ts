@@ -21,7 +21,7 @@ vi.mock("jspdf", () => {
   return { jsPDF: FakePDF };
 });
 
-import { generateTab, Tuning } from "@tutts/core";
+import { generateTab, Tuning } from "tutts";
 import { pdfFile } from "./pdf";
 
 describe("pdfFile", () => {

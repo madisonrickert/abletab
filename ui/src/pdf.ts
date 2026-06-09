@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import type { GeneratedTab } from "@tutts/core";
+import type { GeneratedTab } from "tutts";
 import type { ExportedFile } from "../../src/payload";
 
 const FONT_PT = 9;

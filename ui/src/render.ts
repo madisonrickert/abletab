@@ -1,4 +1,4 @@
-import type { GeneratedTab } from "@tutts/core";
+import type { GeneratedTab } from "tutts";
 
 /** Approx. monospace glyph advance as a fraction of font-size. */
 const CHAR_RATIO = 0.6;

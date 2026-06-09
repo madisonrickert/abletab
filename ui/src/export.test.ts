@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { sanitize, asciiFile } from "./export";
-import type { GeneratedTab } from "@tutts/core";
+import type { GeneratedTab } from "tutts";
 
 // A minimal fake — export.ts only calls toAscii(), so the rest can be stubbed.
 const fakeTab = {

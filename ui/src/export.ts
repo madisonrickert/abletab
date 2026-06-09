@@ -1,4 +1,4 @@
-import type { GeneratedTab } from "@tutts/core";
+import type { GeneratedTab } from "tutts";
 import type { ExportedFile } from "../../src/payload";
 
 /** Make a clip name safe as a file name: strip path-hostile chars, never empty,
