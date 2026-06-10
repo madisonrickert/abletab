@@ -26,12 +26,7 @@ Download the latest **`.ablx`** from the [**Releases** page](https://github.com/
 2. Drag the `.ablx` onto that page.
 3. Right-click any MIDI clip → **Extensions → Show Tab**.
 
-Requires **Ableton Live Suite 12.4.5 or newer with Extensions** (currently in beta). The `.ablx` is self-contained and runs inside Live's Extension Host, so you do **not** need Node.js or the SDK installed to use it. Prefer to build it yourself? See [Build from source](#build-from-source).
-
-## How it works
-
-- **Node side** (`src/`) reads the clip + song context and opens a modal webview. It carries no music logic.
-- **Webview** (`ui/`) builds a [`tutts`](https://github.com/madisonrickert/tutts) `Tuning`, runs `generateTab`, and renders the result as monospace ASCII tablature. No graphical engine or music font: every glyph is plain text, in the on-screen view and in the PDF alike.
+Requires **Ableton Live Suite 12.4.5 or newer with Extensions** (currently in beta).
 
 ![The AbleTab window floating over a Live Set, showing a MIDI clip rendered as tablature](docs/screenshot-live.png)
 
@@ -50,8 +45,6 @@ npm run setup                 # vendor the SDK tarballs + install
 npm start                     # build + run in the Extensions CLI
 ```
 
-The tab engine, [`tutts`](https://www.npmjs.com/package/tutts), installs from npm. Building needs **Node.js ≥ 24**.
-
 | Command | Purpose |
 |---|---|
 | `npm test` | Pure unit tests (CI-safe; no SDK needed). |
@@ -60,9 +53,9 @@ The tab engine, [`tutts`](https://www.npmjs.com/package/tutts), installs from np
 | `npm run build` | Production build → `dist/extension.js`. |
 | `npm run package` | Build the installable `.ablx` into `release/`. |
 
-## Credits
+## Acknowledgements
 
-Fingering algorithm by [tutts](https://github.com/madisonrickert/tutts), a TypeScript port of [tuttut](https://github.com/natecdr/tuttut) by Nathan Candre. Bundled third-party license notices ship inside the extension (info button → Open source licenses).
+Fingering algorithm is powered by [tutts](https://github.com/madisonrickert/tutts), a TypeScript port of [tuttut](https://github.com/natecdr/tuttut).
 
 ## Other extensions by the developer
 
