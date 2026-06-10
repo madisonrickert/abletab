@@ -16,7 +16,7 @@ View any MIDI clip in Ableton Live as stringed-instrument tablature. Pick an ins
 - **Instrument presets**: Standard Guitar, Drop D, DADGAD, Open G, 7-String Guitar, Bass, and Ukulele, plus a fully custom mode: 4 to 8 strings, any per-string tuning, configurable fret count.
 - **Quantize**: Snap onsets to a 1/4 to 1/32 grid, or turn snapping off.
 - **Octave shift with range detection**: When a part sits outside the instrument's range, an info bar offers the one-click octave shift that fits it best; or shift manually from the Tuning menu.
-- **Export**: Vector **PDF** and **ASCII tab** (`.txt`, wrapped at a column width you choose).
+- **Export**: **PDF** and **ASCII tab** (`.txt`, wrapped at a column width you choose).
 
 ## Install
 
