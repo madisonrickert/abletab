@@ -22,6 +22,7 @@ const payload: TabPayload = {
     fretCount: 20,
     quantizeGrid: "1/16",
     formats: ["pdf"],
+    asciiWidth: 80,
   },
   fingerprint: "a3f9c1",
   lastExportFingerprint: null,

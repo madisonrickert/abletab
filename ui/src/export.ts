@@ -8,6 +8,11 @@ export function sanitize(name: string): string {
   return (name.replace(/[\\/:*?"<>|]/g, "_").trim() || "tab").slice(0, 200);
 }
 
-export function asciiFile(base: string, tab: GeneratedTab): ExportedFile {
-  return { name: `${base}.txt`, format: "ascii", encoding: "text", data: tab.toAscii() };
+export function asciiFile(base: string, tab: GeneratedTab, wrapColumns: number): ExportedFile {
+  return {
+    name: `${base}.txt`,
+    format: "ascii",
+    encoding: "text",
+    data: tab.toAscii({ maxWidth: wrapColumns, timeSignature: true }),
+  };
 }

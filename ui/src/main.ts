@@ -1,7 +1,8 @@
-import { runPipeline, type PipelineOutput } from "./tab-pipeline";
+import { runPipeline, buildTuning, type PipelineOutput } from "./tab-pipeline";
 import { renderAscii } from "./render";
 import { sanitize, asciiFile } from "./export";
 import { pdfFile } from "./pdf";
+import { countOutOfRange, suggestOctaveShift } from "./range";
 import type { TabPayload, TabResult, TabSettings, TabFormat, TabQuantize, ExportedFile } from "../../src/payload";
 import { CUSTOM_PRESET_NAME, MIN_STRINGS, MAX_STRINGS } from "../../src/instruments";
 
@@ -13,6 +14,8 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const presetSel = $<HTMLSelectElement>("preset");
 const stringsEl = $<HTMLDivElement>("strings");
 const fretsInput = $<HTMLInputElement>("frets");
+const octaveInput = $<HTMLInputElement>("octave");
+const asciiWidthInput = $<HTMLInputElement>("asciiWidth");
 const gridSel = $<HTMLSelectElement>("grid");
 const scoreEl = $<HTMLDivElement>("score");
 const statusEl = $<HTMLSpanElement>("status");
@@ -24,6 +27,10 @@ const creditsOverlay = $<HTMLDivElement>("credits");
 let tuning: string[] = [...payload.settings.tuning];
 let presetName: string = payload.settings.preset;
 let lastRender: PipelineOutput | null = null;
+// Whole-clip octave shift for display/export. Clip-specific (depends on which
+// part you dropped on which instrument), so deliberately not persisted.
+let octaveShift = 0;
+let rangeBannerDismissed = false;
 
 // ---- Populate the preset dropdown (presets + Custom). ----
 for (const p of payload.presets) {
@@ -39,6 +46,7 @@ presetSel.appendChild(customOpt);
 presetSel.value = presetName;
 fretsInput.value = String(payload.settings.fretCount);
 gridSel.value = payload.settings.quantizeGrid;
+asciiWidthInput.value = String(payload.settings.asciiWidth);
 
 // ---- Per-string rows. Row 0 is the lowest-pitched (highest-numbered) string, at the top. ----
 function buildStringRows(): void {
@@ -72,10 +80,18 @@ function buildStringRows(): void {
 function markCustom(): void {
   presetName = CUSTOM_PRESET_NAME;
   presetSel.value = CUSTOM_PRESET_NAME;
+  rangeBannerDismissed = false; // new playable range, new fit verdict
 }
 
 function currentGrid(): TabQuantize {
   return gridSel.value as TabQuantize;
+}
+
+function currentAsciiWidth(): number {
+  const v = Number(asciiWidthInput.value);
+  return Number.isFinite(v) && v > 0
+    ? Math.min(Number(asciiWidthInput.max), Math.max(Number(asciiWidthInput.min), Math.round(v)))
+    : payload.settings.asciiWidth;
 }
 
 function currentSettings(formats: TabFormat[]): TabSettings {
@@ -85,7 +101,14 @@ function currentSettings(formats: TabFormat[]): TabSettings {
     fretCount: Number(fretsInput.value) || payload.settings.fretCount,
     quantizeGrid: currentGrid(),
     formats,
+    asciiWidth: currentAsciiWidth(),
   };
+}
+
+/** The clip's notes after the whole-clip octave shift (what render + exports see). */
+function shiftedNotes() {
+  if (octaveShift === 0) return payload.notes;
+  return payload.notes.map((n) => ({ ...n, midi: n.midi + octaveShift * 12 }));
 }
 
 // ---- Banners ----
@@ -97,6 +120,47 @@ function showStaleBanner(): void {
 function showWarnings(warnings: string[]): void {
   warnBanner.hidden = warnings.length === 0;
   if (warnings.length) warnBanner.textContent = warnings.join("  •  ");
+}
+
+// ---- Range fit: offer an octave shift when the clip sits badly on the tuning ----
+const rangeBanner = $<HTMLDivElement>("rangeBanner");
+const rangeMsg = $<HTMLSpanElement>("rangeMsg");
+const rangeApply = $<HTMLButtonElement>("rangeApply");
+
+function updateRangeBanner(): void {
+  if (rangeBannerDismissed) {
+    rangeBanner.hidden = true;
+    return;
+  }
+  const bounds = buildTuning(tuning, Number(fretsInput.value) || payload.settings.fretCount)
+    .getPitchBounds();
+  const midis = shiftedNotes().map((n) => n.midi);
+  const oob = countOutOfRange(midis, bounds);
+  if (oob === 0) {
+    rangeBanner.hidden = true;
+    return;
+  }
+  const suggestion = suggestOctaveShift(midis, bounds);
+  const noun = oob === 1 ? "note is" : "notes are";
+  rangeMsg.textContent = `${oob} of ${midis.length} ${noun} out of range for this tuning and will be folded by octaves.`;
+  if (suggestion !== null) {
+    const dir = suggestion > 0 ? "up" : "down";
+    const n = Math.abs(suggestion);
+    rangeApply.textContent = `Shift ${dir} ${n} octave${n === 1 ? "" : "s"}`;
+    rangeApply.hidden = false;
+    rangeApply.onclick = () => {
+      setOctaveShift(octaveShift + suggestion);
+    };
+  } else {
+    rangeApply.hidden = true;
+  }
+  rangeBanner.hidden = false;
+}
+
+function setOctaveShift(value: number): void {
+  octaveShift = Math.min(4, Math.max(-4, Math.round(value) || 0));
+  octaveInput.value = String(octaveShift);
+  void render();
 }
 function showError(err: unknown): void {
   // textContent (not innerHTML) so an error string can never inject markup.
@@ -113,9 +177,14 @@ function formatTempo(tempo: number): string {
   return `${Math.round(tempo * 10) / 10} bpm`;
 }
 
+/** "oct +1" / "oct -2" provenance fragment, or empty when unshifted. */
+function octaveLabel(): string {
+  return octaveShift === 0 ? "" : ` · oct ${octaveShift > 0 ? "+" : ""}${octaveShift}`;
+}
+
 function updateStatus(): void {
   const p = payload.provenance;
-  statusEl.textContent = `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${formatTempo(p.tempo)} · #${p.fingerprint}`;
+  statusEl.textContent = `${p.clipName} · ${presetName} · ${tuning.join(" ")}${octaveLabel()} · ${formatTempo(p.tempo)} · #${p.fingerprint}`;
 }
 
 // ---- The render pipeline (re-run on any control change). ----
@@ -123,7 +192,7 @@ function render(): PipelineOutput | null {
   lastRender = null; // clear stale state so a pipeline failure gates doExport's guard
   try {
     const out = runPipeline({
-      notes: payload.notes,
+      notes: shiftedNotes(),
       stringNames: tuning,
       fretCount: Number(fretsInput.value) || payload.settings.fretCount,
       quantizeGrid: currentGrid(),
@@ -135,6 +204,7 @@ function render(): PipelineOutput | null {
     lastRender = out;
     renderAscii(out.tab, scoreEl);
     showWarnings(out.warnings);
+    updateRangeBanner();
     updateStatus();
     return out;
   } catch (err) {
@@ -147,7 +217,7 @@ function render(): PipelineOutput | null {
 // ---- Export ----
 function footerText(): string {
   const p = payload.provenance;
-  return `${p.clipName} · ${presetName} · ${tuning.join(" ")} · ${formatTempo(p.tempo)} · #${p.fingerprint} · ${p.generatedAt}`;
+  return `${p.clipName} · ${presetName} · ${tuning.join(" ")}${octaveLabel()} · ${formatTempo(p.tempo)} · #${p.fingerprint} · ${p.generatedAt}`;
 }
 
 function selectedFormats(): TabFormat[] {
@@ -177,7 +247,7 @@ function doExport(): void {
     const files: ExportedFile[] = [];
     for (const fmt of formats) {
       if (fmt === "ascii") {
-        files.push(asciiFile(base, lastRender.tab));
+        files.push(asciiFile(base, lastRender.tab, currentAsciiWidth()));
       } else if (fmt === "pdf") {
         files.push(pdfFile(base, lastRender.tab, footerText()));
       }
@@ -206,6 +276,7 @@ presetSel.addEventListener("change", () => {
     presetName = p.name;
     tuning = [...p.stringNames];
     fretsInput.value = String(p.fretCount);
+    rangeBannerDismissed = false; // new playable range, new fit verdict
     buildStringRows();
     void render();
   }
@@ -219,7 +290,23 @@ fretsInput.addEventListener("change", () => {
     ? Math.min(Number(fretsInput.max), Math.max(Number(fretsInput.min), Math.round(v)))
     : payload.settings.fretCount;
   fretsInput.value = String(clamped);
+  rangeBannerDismissed = false; // new playable range, new fit verdict
   void render();
+});
+
+// ---- Octave shift (display/export transposition by whole octaves) ----
+$<HTMLButtonElement>("octDown").addEventListener("click", () => setOctaveShift(octaveShift - 1));
+$<HTMLButtonElement>("octUp").addEventListener("click", () => setOctaveShift(octaveShift + 1));
+octaveInput.addEventListener("change", () => setOctaveShift(Number(octaveInput.value)));
+
+$<HTMLButtonElement>("rangeDismiss").addEventListener("click", () => {
+  rangeBannerDismissed = true;
+  rangeBanner.hidden = true;
+});
+
+// Wrap column only affects the .txt export; no re-render needed, just clamp.
+asciiWidthInput.addEventListener("change", () => {
+  asciiWidthInput.value = String(currentAsciiWidth());
 });
 
 gridSel.addEventListener("change", () => void render());

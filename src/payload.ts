@@ -12,6 +12,7 @@ export interface TabSettings {
   fretCount: number;
   quantizeGrid: TabQuantize;
   formats: TabFormat[];
+  asciiWidth: number; // wrap column for the .txt export (the on-screen view wraps to the window)
 }
 
 export interface TabProvenance {

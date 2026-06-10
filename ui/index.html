@@ -9,10 +9,18 @@
         --panel: #4e4e4e; --accent: #ffa500; --text: #d0d0d0;
         --border: #2c2c2c; --input: #2c2c2c; --warn: #c8862b;
         --muted: #9a9a9a; --bar-h: 42px;
+        /* Typography scale (1.25 major third on a 13px base) — mirrors Sheet Music */
+        --fs-title: 21px; --fs-section: 15px; --fs-body: 13px;
+        --fs-meta: 12px; --fs-eyebrow: 11px; --fs-mono: 11.5px;
+        /* Spacing ladder (4px base) */
+        --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+        /* Native font stacks */
+        --font-sans: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
+        --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       }
       * { box-sizing: border-box; }
       html, body { height: 100%; }
-      body { margin: 0; background: #fff; color: var(--text); font-family: sans-serif; font-size: 13px; }
+      body { margin: 0; background: #fff; color: var(--text); font-family: var(--font-sans); font-size: 13px; -webkit-font-smoothing: antialiased; }
       .app { height: 100vh; display: grid; grid-template-rows: var(--bar-h) auto 1fr; }
       .topbar { display: flex; align-items: center; gap: 10px; padding: 0 10px;
                 background: var(--panel); border-bottom: 1px solid var(--border); }
@@ -21,7 +29,11 @@
       select, input { background: var(--input); color: var(--text); border: 1px solid var(--border); padding: 3px 6px; font: inherit; }
       .ghost { background: transparent; color: var(--text); border: 1px solid var(--border);
                border-radius: 10px; padding: 4px 10px; cursor: pointer; font: inherit; }
-      .icon { width: 28px; padding: 4px 0; text-align: center; }
+      /* Flex-center so glyphs (ⓘ ✕ – +) sit dead-center regardless of font metrics. */
+      .icon { width: 28px; height: 28px; padding: 0; display: inline-flex;
+              align-items: center; justify-content: center; line-height: 1; }
+      .stepper { display: flex; align-items: center; gap: 4px; }
+      .stepper input { width: 44px; text-align: center; }
       #closeBtn { background: #d64541; color: #fff; border-color: #b73a36; font-weight: 700; }
       #closeBtn:hover { background: #e0564f; }
       .pill { background: var(--accent); color: #000; border: none; padding: 6px 14px; border-radius: 12px; cursor: pointer; font: inherit; }
@@ -33,6 +45,10 @@
       .banner { padding: 6px 12px; font-weight: 600; }
       .banner.stale { background: var(--warn); color: #000; }
       .banner.warn { background: #6b4a1f; color: #ffd9a0; font-weight: 500; }
+      .banner.info { background: #3d5a73; color: #dceaf7; font-weight: 500;
+                     display: flex; align-items: center; gap: 10px; }
+      .banner.info .pill { padding: 3px 10px; }
+      .banner.info .ghost { padding: 3px 10px; border-color: #5b7c96; color: #dceaf7; }
       .banner[hidden] { display: none; }
       .menu-wrap, .export-wrap { position: relative; }
       .popover { position: absolute; top: calc(100% + 6px); z-index: 10; right: 0;
@@ -48,29 +64,38 @@
       .string-controls { display: flex; gap: 4px; margin-top: 4px; }
       .auto-note { color: var(--muted); font-style: italic; font-size: 11px; }
       .exportFmt { display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
-      /* Credits overlay (template adapted from ablevsep) */
-      #infoBtn { font-size: 15px; line-height: 1; }
+      /* Credits + licenses overlay (visual parity with the Sheet Music sibling). */
+      #infoBtn { font-size: 15px; }
       .overlay { position: fixed; inset: 0; z-index: 20; background: #2c2c2c; color: var(--text);
                  padding: 18px 22px; display: flex; flex-direction: column; overflow: auto; }
       .overlay[hidden] { display: none; }
       .overlay a { color: var(--accent); text-decoration: none; }
       .overlay a:hover { text-decoration: underline; }
-      .overlay h2 { font-size: 16px; font-weight: 650; margin: 2px 0 0; color: #fff; }
-      .overlay .tagline { color: var(--muted); font-size: 12px; margin: 8px 0 12px; line-height: 1.5; }
-      .overlay .bio { color: var(--text); font-size: 12.5px; line-height: 1.6; margin: 0 0 14px; }
-      .credit-note { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
-      .overlay-actions { margin-top: auto; padding-top: 16px; display: flex; justify-content: flex-end; }
+      .overlay h2 { font-size: var(--fs-title); font-weight: 700; line-height: 1.15;
+                    letter-spacing: -0.01em; color: #fff; margin: 0 0 var(--sp-1); }
+      .overlay .tagline { color: var(--muted); font-size: var(--fs-meta); line-height: 1.5;
+                          margin: 0 0 var(--sp-5); max-width: 62ch; }
+      .overlay .bio { color: var(--text); font-size: var(--fs-body); line-height: 1.65;
+                      margin: 0 0 var(--sp-3); max-width: 64ch; }
+      .overlay .bio .lead { display: block; font-size: var(--fs-eyebrow); font-weight: 700;
+                            letter-spacing: 0.07em; text-transform: uppercase;
+                            color: var(--muted); margin: 0 0 var(--sp-1); }
+      .credit-note { color: var(--muted); font-size: var(--fs-meta); line-height: 1.5;
+                     margin: 0 0 var(--sp-4); max-width: 64ch; }
+      .overlay-actions { margin-top: auto; padding-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
       .overlay-actions button { background: var(--panel); color: var(--text); border: 1px solid #555;
-                                border-radius: 10px; padding: 6px 16px; cursor: pointer; font: inherit; }
+                                border-radius: 10px; padding: 6px 18px; cursor: pointer;
+                                font-family: var(--font-sans); font-size: var(--fs-body); font-weight: 500; }
       .overlay-actions button:hover { background: #5a5a5a; }
       /* Licenses live inline in the credits panel: a labeled sub-panel that fills
          the otherwise-empty space below the bio and scrolls on its own. */
-      .licenses-head { font-size: 13px; font-weight: 600; line-height: 1.2; color: #fff;
-                       margin: 14px 0 8px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .licenses-head { font-size: var(--fs-section); font-weight: 600; line-height: 1.2;
+                       color: #fff; margin: 0 0 var(--sp-2);
+                       padding-top: var(--sp-4); border-top: 1px solid var(--border); }
       .licenses-pre { flex: 1 1 0; min-height: 0; overflow: auto; margin: 0; background: var(--input);
-                      border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
-                      color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-                      font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
+                      border: 1px solid var(--border); border-radius: 6px; padding: var(--sp-3) var(--sp-4);
+                      color: var(--muted); font-family: var(--font-mono); font-size: var(--fs-mono);
+                      line-height: 1.5; white-space: pre-wrap; }
     </style>
   </head>
   <body>
@@ -93,6 +118,13 @@
             </div>
             <label>Frets
               <input id="frets" type="number" min="12" max="30" step="1" aria-label="Fret count" />
+            </label>
+            <label>Octave
+              <span class="stepper">
+                <button type="button" id="octDown" class="ghost icon" aria-label="Down an octave">–</button>
+                <input id="octave" type="number" min="-4" max="4" step="1" value="0" inputmode="numeric" aria-label="Octave shift" />
+                <button type="button" id="octUp" class="ghost icon" aria-label="Up an octave">+</button>
+              </span>
             </label>
           </div>
         </div>
@@ -119,6 +151,9 @@
           <div id="exportPanel" class="popover" hidden>
             <label class="exportFmt"><input type="checkbox" class="exportFmt-cb" value="pdf" /> PDF</label>
             <label class="exportFmt"><input type="checkbox" class="exportFmt-cb" value="ascii" /> ASCII tab (.txt)</label>
+            <label>Wrap .txt at
+              <input id="asciiWidth" type="number" min="40" max="400" step="10" aria-label="ASCII wrap column" /> cols
+            </label>
             <button type="button" id="exportBtn" class="pill primary">Export</button>
             <span class="auto-note">Saves to the storage folder and reveals it in Finder.</span>
           </div>
@@ -131,6 +166,11 @@
       <div>
         <div id="staleBanner" class="banner stale" hidden></div>
         <div id="warnBanner" class="banner warn" hidden></div>
+        <div id="rangeBanner" class="banner info" hidden>
+          <span id="rangeMsg"></span>
+          <button type="button" id="rangeApply" class="pill"></button>
+          <button type="button" id="rangeDismiss" class="ghost">Dismiss</button>
+        </div>
       </div>
 
       <main class="score-scroll">
@@ -142,7 +182,7 @@
     <div id="credits" class="overlay" hidden>
       <h2>AbleTab</h2>
       <p class="tagline">View an Ableton Live MIDI clip as stringed-instrument tablature, then export to PDF or ASCII tab.</p>
-      <p class="bio"><strong>About the Creator:</strong> Hope you're enjoying AbleTab! I'm <a href="https://madisonrickert.com" target="_blank" rel="noreferrer">Madison Rickert</a>. I've been both a software engineer and a musician for over 20 years, and it's my joy building tools to empower artists. I create and perform my own music as <a href="https://toefood.music" target="_blank" rel="noreferrer">Toefood</a>.</p>
+      <p class="bio"><span class="lead">About the Creator</span>Hope you're enjoying AbleTab! I'm <a href="https://madisonrickert.com" target="_blank" rel="noreferrer">Madison Rickert</a>. I've been both a software engineer and a musician for over 20 years, and it's my joy building tools to empower artists. I create and perform my own music as <a href="https://toefood.music" target="_blank" rel="noreferrer">Toefood</a>.</p>
       <p class="credit-note">Fingerings chosen with <a href="https://github.com/madisonrickert/tutts" target="_blank" rel="noreferrer">tutts</a>, a TypeScript port of <a href="https://github.com/natecdr/tuttut" target="_blank" rel="noreferrer">tuttut</a> by Nathan Candre.</p>
       <h3 class="licenses-head">Open source licenses</h3>
       <pre id="licensesText" class="licenses-pre"></pre>

@@ -3,10 +3,14 @@ import { sanitize, asciiFile } from "./export";
 import type { GeneratedTab } from "tutts";
 
 // A minimal fake — export.ts only calls toAscii(), so the rest can be stubbed.
+let lastAsciiOpts: unknown;
 const fakeTab = {
   data: { tuning: [], measures: [] },
   toLines: () => ["e|---", "B|---"],
-  toAscii: () => "e|---0---|\nB|--------|\n",
+  toAscii: (opts?: unknown) => {
+    lastAsciiOpts = opts;
+    return "e|---0---|\nB|--------|\n";
+  },
 } as unknown as GeneratedTab;
 
 describe("sanitize", () => {
@@ -25,8 +29,9 @@ describe("sanitize", () => {
 });
 
 describe("asciiFile", () => {
-  it("wraps toAscii() output as a .txt text file", () => {
-    const f = asciiFile("Verse", fakeTab);
+  it("wraps toAscii() output as a .txt text file at the requested width", () => {
+    const f = asciiFile("Verse", fakeTab, 80);
     expect(f).toEqual({ name: "Verse.txt", format: "ascii", encoding: "text", data: "e|---0---|\nB|--------|\n" });
+    expect(lastAsciiOpts).toEqual({ maxWidth: 80, timeSignature: true });
   });
 });

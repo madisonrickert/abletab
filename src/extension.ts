@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS: TabSettings = {
   fretCount: standard.fretCount,
   quantizeGrid: "1/16",
   formats: ["pdf"],
+  asciiWidth: 80,
 };
 
 const NOTE_OPTIONS = chromaticNoteNames(0, 6);
