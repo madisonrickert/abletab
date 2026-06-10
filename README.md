@@ -63,3 +63,10 @@ The tab engine, [`tutts`](https://www.npmjs.com/package/tutts), installs from np
 ## Credits
 
 Fingering algorithm by [tutts](https://github.com/madisonrickert/tutts), a TypeScript port of [tuttut](https://github.com/natecdr/tuttut) by Nathan Candre. Bundled third-party license notices ship inside the extension (info button → Open source licenses).
+
+## Other extensions by the developer
+
+AbleTab is my third extension. Go check out my others!
+
+- [Sheet Music](https://github.com/madisonrickert/ableton-sheet-music-extension): View an Ableton Live MIDI clip as sheet music
+- [AbleVSEP](https://github.com/madisonrickert/ablevsep): Separate any audio clip into stems with any of MVSEP's 100+ models, right inside Ableton Live 
