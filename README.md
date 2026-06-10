@@ -12,13 +12,11 @@ View any MIDI clip in Ableton Live as stringed-instrument tablature. Pick an ins
 
 ## Features
 
-- **Tab view**: renders a selected MIDI clip as monospace tablature. Fingerings are chosen by [tutts](https://github.com/madisonrickert/tutts), an HMM/Viterbi engine that picks the easiest playable path across the whole clip.
+- **Smart tab conversion**: Renders a selected MIDI clip as monospace tablature. Fingerings are chosen by [tutts](https://github.com/madisonrickert/tutts), an HMM/Viterbi engine that picks the easiest playable path across the whole clip.
 - **Instrument presets**: Standard Guitar, Drop D, DADGAD, Open G, 7-String Guitar, Bass, and Ukulele, plus a fully custom mode: 4 to 8 strings, any per-string tuning, configurable fret count.
-- **Quantize**: snap onsets to a 1/4 to 1/32 grid, or turn snapping off.
-- **Octave shift with range detection**: when a part sits outside the instrument's range, an info bar offers the one-click octave shift that fits it best; or shift manually from the Tuning menu.
-- **Export**: vector **PDF** (real text, not a raster) and **ASCII tab** (`.txt`, wrapped at a column width you choose). Exports are written to the extension's storage folder and revealed in Finder, with a provenance footer (clip, tuning, tempo, fingerprint) on every PDF page.
-- **Staleness banner**: warns when the clip changed since your last export.
-- **Editing**: delegated to Live's piano roll. Adjust notes there, then re-open the tab to refresh.
+- **Quantize**: Snap onsets to a 1/4 to 1/32 grid, or turn snapping off.
+- **Octave shift with range detection**: When a part sits outside the instrument's range, an info bar offers the one-click octave shift that fits it best; or shift manually from the Tuning menu.
+- **Export**: Vector **PDF** and **ASCII tab** (`.txt`, wrapped at a column width you choose).
 
 ## Install
 
